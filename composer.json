@@ -1,8 +1,8 @@
 {
-  "name": "vendor/project",
-  "type": "",
-  "description": "",
-  "license": "mixed",
+  "name": "8fold/php-printify-sdk",
+  "type": "library",
+  "description": "A library for interacting with the Printify API.",
+  "license": "MIT",
   "authors": [
     {
       "name": "Josh Bruce",
@@ -14,7 +14,10 @@
   "support": {
   },
   "require": {
-    "php": "^8.1"
+    "php": "^8.1",
+    "kriswallsmith/buzz": "^1.2",
+    "nyholm/psr7": "^1.5",
+    "vlucas/phpdotenv": "^5.4"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.8",
@@ -23,20 +26,25 @@
   },
   "autoload": {
     "psr-4": {
+      "Eightfold\\Printify\\": "./src"
     }
   },
   "autoload-dev": {
     "psr-4": {
+      "Eightfold\\Printify\\Tests\\": "./tests"
     }
   },
   "config": {
-    "preferred-install": "dist"
+    "preferred-install": "dist",
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
   },
   "prefer-stable": true,
   "scripts": {
     "prod": "@production",
     "production": [
-      "composer dumpautoload -o",
+      "composer dumuutoload -o",
       "@style",
       "@stan",
       "@test"
