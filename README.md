@@ -11,12 +11,28 @@
 
 ## Usage
 
+To create a connection:
+
+```
+use Eightfold\Printify\Printify;
+
+$printify = Printify::init({'YOUR_ACCESS_TOKEN'});
+```
+
 We want to minimize the number API calls made; therefore, the recommended starting point to receive a list of products and variations in a single call is as follows:
 
 ```
 use Eightfold\Printify\Printify;
 
 $products = Printify::init({'YOUR_ACCESS_TOKEN'})->getProductsIn({'THE_SHOP_ID'});
+```
+
+To get a single product in a single call:
+
+use Eightfold\Printify\Printify;```
+
+$product = Printify::init({'YOUR_ACCESS_TOKEN'})
+    ->getProductWithIn({'THE_PRODUCT_ID'}, {'THE_SHOP_ID'});
 ```
 
 ## Details

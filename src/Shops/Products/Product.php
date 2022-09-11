@@ -97,10 +97,10 @@ class Product
     /**
      * @todo: Use instance of collection object.
      */
-    public function variants(): Variants
+    public function variants(bool $all = false): Variants
     {
         $variants = $this->propertyNamed('variants');
-        return Variants::init($variants);
+        return Variants::init($variants, $all);
     }
 
     /**

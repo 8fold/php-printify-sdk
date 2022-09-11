@@ -13,10 +13,21 @@ class Variants implements Traversable, Iterator
 
     private array $variants;
 
-    public static function init(array $variants): self
+    public static function init(array $variants, bool $all = false): self
     {
+        if ($all === false) {
+            $v = [];
+            foreach ($variants as $variant) {
+                if ($variant->is_enabled) {
+                    $v[] = $variant;
+                }
+            }
+            $variants = $v;
+        }
+
         self::$printifyObject = new StdClass();
         self::$printifyObject->data = $variants;
+
         return new self();
     }
 

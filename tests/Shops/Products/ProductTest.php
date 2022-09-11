@@ -43,10 +43,16 @@ class ProductTest extends TestCase
      */
     public function can_get_variants(): void
     {
-        $variants = $this->printify->getProductWithIn(
+        $product = $this->printify->getProductWithIn(
             $this->testProductId,
             $this->testShopId
-        )->variants();
+        );
+
+        $liveVariants = $product->variants();
+
+        $this->assertSame($liveVariants->total(), 1);
+
+        $variants = $product->variants(all: true);
 
         $this->assertSame($variants->total(), 23);
     }
@@ -74,7 +80,7 @@ class ProductTest extends TestCase
 
         $this->assertSame($first->id(), $product->id());
 
-        $this->assertSame($first->shopId(), $product->shopId();
+        $this->assertSame($first->shopId(), $product->shopId());
     }
 
     /**
