@@ -21,16 +21,16 @@ class TestCase extends PhpUnitTestCase
 
     public function setUp(): void
     {
-        Dotenv::createImmutable(__DIR__ . '/../')->load();
-
-        $token         = $_ENV['PRINTIFY_TOKEN'];
-        $testShopId    = (int) $_ENV['TEST_SHOP_ID'];
-        $testProductId = $_ENV['TEST_PRODUCT_ID'];
-        $testShopTitle = $_ENV['TEST_SHOP_TITLE'];
-
-        $this->printify      = Printify::init($token);
-        $this->testShopId    = $testShopId;
-        $this->testProductId = $testProductId;
-        $this->testShopTitle = $testShopTitle;
+//         Dotenv::createImmutable(__DIR__ . '/../')->load();
+//
+//         $token         = $_ENV['PRINTIFY_TOKEN'];
+//         $testShopId    = (int) $_ENV['TEST_SHOP_ID'];
+//         $testProductId = $_ENV['TEST_PRODUCT_ID'];
+//         $testShopTitle = $_ENV['TEST_SHOP_TITLE'];
+//
+//         $this->printify      = Printify::init($token);
+//         $this->testShopId    = $testShopId;
+//         $this->testProductId = $testProductId;
+//         $this->testShopTitle = $testShopTitle;
     }
 }
