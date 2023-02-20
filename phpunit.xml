@@ -10,7 +10,8 @@
 	convertWarningsToExceptions="true"
 	processIsolation="false"
 	stopOnFailure="false"
-	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+	defaultTestSuite="base">
   <coverage>
     <include>
       <directory suffix=".php">./src/</directory>
@@ -20,7 +21,7 @@
     </exclude>
   </coverage>
   <testsuites>
-    <testsuite name="printify">
+    <testsuite name="base">
       <directory suffix="Test.php">./tests/</directory>
     </testsuite>
   </testsuites>
