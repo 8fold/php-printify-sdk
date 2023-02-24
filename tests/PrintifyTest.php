@@ -4,11 +4,8 @@ declare(strict_types=1);
 namespace Eightfold\Printify\Tests;
 
 use PHPUnit\Framework\TestCase;
-// use Eightfold\Printify\Tests\PrintifyTestCase as TestCase;
 
 use Eightfold\Printify\Printify;
-
-use Eightfold\Printify\Enums\PrintifyError;
 
 class PrintifyTest extends TestCase
 {
