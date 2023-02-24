@@ -71,7 +71,6 @@ $client->getProduct({product id});
 // No API call
 $product = $client->getProduct($shop, {product id});
 
-// No API call
 $product->id();
 
 $product->shopId();
@@ -106,7 +105,7 @@ $variant = $product->variants()->variantWithId({variant id});
 $images = $product->images();
 ```
 
-*Retrieve Images for a Variant*
+*Retrieve array of Images for a Variant*
 
 ```php
 $images = $variant->images($product);
@@ -114,6 +113,15 @@ $images = $variant->images($product);
 $images = $product->imagesForVariant($variant);
 ```
 
+*Retrieve default Image for a Variant*
+
+```php
+$image = $variant->defaultImage($product);
+
+$image = $product->defaultForVariant($variant);
+
+$image = $product->imagesForVariant($variant, defaultOnly: true);
+```
 
 **Set Product publish status to succeeded**
 
