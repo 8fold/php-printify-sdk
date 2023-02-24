@@ -1,0 +1,18 @@
+{
+  "current_page": 1,
+  "data": [
+    {
+      "id": "5d39b159e7c48c000728c89f"
+    }
+  ],
+  "first_page_url": "/?page=1",
+  "from": 1,
+  "last_page": 22,
+  "last_page_url": "/?page=22",
+  "next_page_url": "/?page=2",
+  "path": "/",
+  "per_page": 1,
+  "prev_page_url": null,
+  "to": 1,
+  "total": 22
+}
