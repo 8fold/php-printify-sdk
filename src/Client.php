@@ -77,35 +77,6 @@ class Client
         return Shops::fromResponse($this, $response);
     }
 
-    public function products(
-        int|Shop $shop,
-        array $productIds
-    ): Products {
-        if (is_int($shop) === false) {
-            $shop = $shop->id();
-        }
-
-        $processedIds = [];
-        $products = [];
-        foreach ($productIds as $productId) {
-            if (in_array($productId, $processedIds)) {
-                continue;
-            }
-            $processedIds[] = $productId;
-
-            $p = new StdClass();
-            $p->id = $productId;
-            $p->shop_id = $shop;
-
-            $products[] = $p;
-        }
-
-        $object = new StdClass();
-        $object->data = $products;
-
-        return Products::fromObject($this, $object);
-    }
-
     public function getProducts(int|Shop $shop): Products|ResponseInterface
     {
         $method   = 'GET';
@@ -119,6 +90,17 @@ class Client
             return $response;
         }
         return Products::fromResponse($this, $response);
+    }
+
+    public function product(
+        int|Shop $shop,
+        string $productId
+    ): Product {
+        if (is_int($shop) === false) {
+            $shop = $shop->id();
+        }
+
+        return Product::withId($this, $shop, $productId);
     }
 
     public function getProduct(
@@ -143,7 +125,7 @@ class Client
         Product $product,
         External|null $external = null,
         bool $returnBool = false
-    ): ResponseInterface {
+    ): ResponseInterface|bool {
         $method   = 'POST';
         $endpoint = $this->account()->apiVersion() .
             Endpoints::postPublishingSucceeded($product);
