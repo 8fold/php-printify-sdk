@@ -5,35 +5,56 @@ namespace Eightfold\Printify;
 
 class Printify
 {
-    /** @var string The access token for the custom integration. */
-    private static string $accessToken;
+    private const API_VERSION = 'https://api.printify.com/v1';
 
-    /** @var string The base URL for the Printify API. */
-    private static string $apiBase;
+    /**
+     * @var array<string, string>
+     */
+    private array $mergedConfig;
 
-    public static function createSingleton(array $config): void
+    public static function account(string $accessToken): self
     {
-        self::setAccessToken($config['accessToken']);
-        self::setApiBase($config['apiBase']);
+        return new self($accessToken);
     }
 
-    public static function setAccessToken(string $accessToken): void
+    final private function __construct(private string $accessToken)
     {
-        self::$accessToken = $accessToken;
     }
 
-    public static function accessToken(): string
+    public function apiVersion(): string
     {
-        return self::$accessToken;
+        $config = $this->config();
+        return $config['api_version'];
     }
 
-    public static function setApiBase(string $apiBase): void
+    public function accessToken(): string
     {
-        self::$apiBase = $apiBase;
+        $config = $this->config();
+        return $config['access_token'];
     }
 
-    public static function apiBase(): string
+    /**
+     * @return array<string, string>
+     */
+    private function config(): array
     {
-        return self::$apiBase;
+        if (isset($this->mergedConfig) === false) {
+            $dc = $this->defaultConfig();
+            $dc['access_token'] = $this->accessToken;
+
+            $this->mergedConfig = $dc;
+        }
+        return $this->mergedConfig;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function defaultConfig(): array
+    {
+        return [
+            'api_version'  => self::API_VERSION,
+            'access_token' => ''
+        ];
     }
 }

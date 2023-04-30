@@ -3,70 +3,76 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Shops;
 
+use Eightfold\Printify\Contracts\SupportsLazyLoading;
+
 use StdClass;
 
-use Eightfold\Printify\Shops\Products\Products;
+use Eightfold\Printify\Client;
 
-class Shop
+class Shop implements SupportsLazyLoading
 {
-    private static StdClass $printifyObject;
-
-    public static function init(StdClass $printifyObject): self
+    public static function withId(Client $client, int $id): self
     {
-        self::$printifyObject = $printifyObject;
+        $object = new StdClass();
+        $object->id = $id;
 
-        return new self();
+        return self::fromObject($client, $object);
     }
 
-    public static function endpoint(): string
+    public static function fromObject(Client $client, StdClass $object): self
     {
-        return '/' . self::$id;
+        return new self($client, $object);
     }
 
-    /**
-     * @todo: Disconnect Shop
-    public static function disconnect(): void
-    {}
-     */
-
-    final private function __construct()
-    {
+    final private function __construct(
+        private Client $client,
+        private StdClass $object
+    ) {
     }
 
-    private function printifyOjbect(): StdClass
+    public function object(): StdClass
     {
-        return self::$printifyObject;
+        return $this->object;
     }
 
-    public function products(): Products
-    {
-        return Products::init($this);
-    }
-
-    public function hasProducts(): bool
-    {
-        return $this->products()->total() > 0;
-    }
-
-    /** Printify object members **/
     public function id(): int
     {
-        return $this->propertyNamed('id');
+        return $this->object()->id;
     }
 
     public function title(): string
     {
-        return $this->propertyNamed('title');
+        $value = $this->valueForProperty('title');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
     public function salesChannel(): string
     {
-        // Printify official is custom_intergration
-        return $this->propertyNamed('sales_channel');
+        $value = $this->valueForProperty('sales_channel');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
-    private function propertyNamed(string $propertyName): int|string|bool
+    public function valueForProperty(string $named): mixed
     {
-        return $this->printifyOjbect()->$propertyName;
+        $obj = $this->object();
+        if (property_exists($obj, $named) === false) {
+            $shop = $this->client()->getShop($this->id());
+            if (is_bool($shop) === false and is_a($shop, Shop::class)) {
+                $this->object = $shop->object();
+
+            }
+        }
+        return $this->object->{$named};
+    }
+
+    private function client(): Client
+    {
+        return $this->client;
     }
 }

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Tests;
 
-use Eightfold\Printify\Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 use Eightfold\Printify\Printify;
 
@@ -12,28 +12,26 @@ class PrintifyTest extends TestCase
     /**
      * @test
      */
-    public function does_follow_singleton_pattern(): void
+    public function can_get_configuration_values(): void
     {
-        $accessToken = 'this_represents_the_printify_access_token';
+        $account = Printify::account(accessToken: 'token');
 
-        $apiBase = 'https://api.url/';
+        $expected = 'https://api.printify.com/v1';
 
-        Printify::createSingleton([
-            'accessToken' => $accessToken,
-            'apiBase'     => $apiBase
-        ]);
+        $result = $account->apiVersion();
 
-        $this->assertSame($accessToken, Printify::accessToken());
+        $this->assertSame(
+            $expected,
+            $result
+        );
 
-        $this->assertSame($apiBase, Printify::apiBase());
-    }
-    /**
-     * @test
-     */
-    public function class_is_found(): void
-    {
-        $this->assertTrue(
-            class_exists(Printify::class)
+        $expected = 'token';
+
+        $result = $account->accessToken();
+
+        $this->assertSame(
+            $expected,
+            $result
         );
     }
 }

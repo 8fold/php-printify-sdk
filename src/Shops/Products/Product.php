@@ -3,164 +3,266 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Shops\Products;
 
+use Eightfold\Printify\Contracts\SupportsLazyLoading;
+
 use StdClass;
+use DateTime;
 
 use Psr\Http\Message\ResponseInterface;
 
-use Eightfold\Printify\Printify;
+use Eightfold\Printify\Client;
 
-use Eightfold\Printify\Shops\Products\Product\Variants;
-use Eightfold\Printify\Shops\Products\Product\Options;
-use Eightfold\Printify\Shops\Products\Product\Images;
+use Eightfold\Printify\Shops\Products\Variants\Variants;
+use Eightfold\Printify\Shops\Products\Images\Images;
 
-class Product
+class Product implements SupportsLazyLoading
 {
-    public static StdClass $printifyObject;
+    public const TIMESTAMP_FORMAT = 'Y-m-d H:i:sP';
 
-    public static string $productId;
+    public static function withId(
+        Client $client,
+        int $shopId,
+        string $productId
+    ): self {
+        $object = new StdClass();
+        $object->id = $productId;
+        $object->shop_id = $shopId;
 
-    public static int $shopId;
-
-    /**
-     * @param StdClass $printifyObject Product object from Printify.
-     *
-     * @return self
-     */
-    public static function init(StdClass $printifyObject, int $shopId): self
-    {
-        self::$printifyObject = $printifyObject;
-        self::$productId      = $printifyObject->id;
-        self::$shopId         = $shopId;
-
-        return new self();
+        return self::fromObject($client, $object);
     }
 
-    public static function get(string $productId, int $shopId): self|false
+    public static function fromResponse(
+        Client $client,
+        ResponseInterface $response
+    ): self {
+        $json = $response->getBody()->getContents();
+        return self::fromJson($client, $json);
+    }
+
+    public static function fromJson(Client $client, string $json): self
     {
-        self::$productId      = $productId;
-        self::$shopId         = $shopId;
-
-        $json = Printify::get(self::endpoint())->getBody()->getContents();
-
-        $decodedJson = json_decode($json);
-        if ($decodedJson === false) {
-            return false;
+        $object = json_decode($json);
+        if (
+            is_object($object) === false or
+            is_a($object, StdClass::class) === false
+        ) {
+            $object = new StdClass();
         }
-
-        return self::init($decodedJson, $shopId);
+        return self::fromObject($client, $object);
     }
 
-    public static function endpoint(): string
+    public static function fromObject(Client $client, StdClass $object): self
     {
-        return '/shops/' . self::$shopId . '/products/' . self::$productId . '.json';
+        return new self($client, $object);
     }
 
-    final private function __construct()
-    {
+    final private function __construct(
+        private Client $client,
+        private StdClass $object
+    ) {
     }
 
-    private function printifyOjbect(): StdClass
-    {
-        return self::$printifyObject;
-    }
-
-    /** Printify object members **/
+    /** Printify properties **/
     public function id(): string
     {
-        return $this->propertyNamed('id');
-    }
-
-    public function title(): string
-    {
-        return $this->propertyNamed('title');
-    }
-
-    public function description(): string
-    {
-        return $this->propertyNamed('description');
-    }
-
-    public function tags(): array
-    {
-        return $this->propertyNamed('tags');
-    }
-
-    /**
-     * @todo: Use instance of collection object.
-     */
-    public function options(): Options
-    {
-        $options = $this->propertyNamed('options');
-        return Options::init($options);
-    }
-
-    /**
-     * @todo: Use instance of collection object.
-     */
-    public function variants(bool $all = false): Variants
-    {
-        $variants = $this->propertyNamed('variants');
-        return Variants::init($variants, $all);
-    }
-
-    /**
-     * @todo: Use instance of collection object.
-     */
-    public function images(): Images
-    {
-        $images = $this->propertyNamed('images');
-        return Images::init($images);
-    }
-
-    public function createdAt(): string
-    {
-        return $this->propertyNamed('created_at');
-    }
-
-    public function updatedAt(): string
-    {
-        return $this->propertyNamed('updated_at');
-    }
-
-    public function visible(): bool
-    {
-        return $this->propertyNamed('visible');
-    }
-
-    public function isLocked(): bool
-    {
-        return $this->propertyNamed('is_locked');
-    }
-
-    public function blueprintId(): int
-    {
-        return $this->propertyNamed('blueprint_id');
-    }
-
-    public function userId(): int
-    {
-        return $this->propertyNamed('user_id');
+        return $this->object()->id;
     }
 
     public function shopId(): int
     {
-        return $this->propertyNamed('shop_id');
+        return $this->object()->shop_id;
+    }
+
+    public function title(): string
+    {
+        $value = $this->valueForProperty('title');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
+    }
+
+    public function description(): string
+    {
+        $value = $this->valueForProperty('description');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
+    }
+
+    /**
+     * @return string[]
+     */
+    public function tags(): array
+    {
+        $value = $this->valueForProperty('tags');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
+    }
+
+    /**
+     * @return StdClass[]
+     */
+    public function options(): array
+    {
+        $value = $this->object()->options;
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
+    }
+
+    public function variants(): Variants
+    {
+        $value = $this->valueForProperty('variants');
+        if (is_array($value)) {
+            return Variants::fromArray($value);
+        }
+        return Variants::fromArray([]);
+    }
+
+    public function images(): Images
+    {
+        $value = $this->valueForProperty('images');
+        if (is_array($value)) {
+            return Images::fromArray($value);
+        }
+        return Images::fromArray([]);
+    }
+
+    public function createdAt(): DateTime|false
+    {
+        return DateTime::createFromFormat(
+            self::TIMESTAMP_FORMAT,
+            $this->createdAtString()
+        );
+    }
+
+    public function updatedAt(bool $returnDate = false): DateTime|false
+    {
+        return DateTime::createFromFormat(
+            self::TIMESTAMP_FORMAT,
+            $this->updatedAtString()
+        );
+    }
+
+    public function visible(): bool
+    {
+        $value = $this->valueForProperty('visible');
+        if (is_bool($value)) {
+            return $value;
+        }
+        return false;
+    }
+
+    public function isLocked(): bool
+    {
+        $value = $this->valueForProperty('is_locked');
+        if (is_bool($value)) {
+            return $value;
+        }
+        return false;
+    }
+
+    public function blueprintId(): int
+    {
+        return intval($this->valueForProperty('blueprint_id'));
+    }
+
+    public function userId(): int
+    {
+        return intval($this->valueForProperty('user_id'));
     }
 
     public function printProviderId(): int
     {
-        return $this->propertyNamed('print_provider_id');
+        return intval($this->valueForProperty('print_provider_id'));
     }
 
     /**
-     * @todo: Use instance of collection object.
+     * @return StdClass[]
      */
-    public function printAreas(): PrintAreas
+    public function printAreas(): array
     {
+        $value = $this->valueForProperty('print_areas');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
     }
 
-    private function propertyNamed(string $propertyName): int|string|bool|array
+    /**
+     * According to the documentation, custom integrations will always be
+     * null or an empty array.
+     *
+     * @return mixed[]
+     */
+    public function salesChannelProperties(): array
     {
-        return $this->printifyOjbect()->$propertyName;
+        $value = $this->valueForProperty('sales_channel_properties');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
+    }
+    /** End Printify properties **/
+
+    public function isVisible(): bool
+    {
+        return $this->visible();
+    }
+
+    public function isInvisible(): bool
+    {
+        return ! $this->visible();
+    }
+
+    public function isUnlocked(): bool
+    {
+        return ! $this->isLocked();
+    }
+
+    public function createdAtString(): string
+    {
+        $date = $this->valueForProperty('created_at');
+        if (is_string($date)) {
+            return $date;
+        }
+        return date(self::TIMESTAMP_FORMAT);
+    }
+
+    public function updatedAtString(): string
+    {
+        $date = $this->valueForProperty('updated_at');
+        if (is_string($date)) {
+            return $date;
+        }
+        return date(self::TIMESTAMP_FORMAT);
+    }
+
+    public function valueForProperty(string $named): mixed
+    {
+        $obj = $this->object();
+        if (property_exists($obj, $named) === false) {
+            $product = $this->client()->getProduct($this->shopId(), $this->id());
+            if (is_a($product, Product::class)) {
+                $this->object = $product->object();
+
+            }
+        }
+        return $this->object()->{$named};
+    }
+
+    private function client(): Client
+    {
+        return $this->client;
+    }
+
+    private function object(): StdClass
+    {
+        return $this->object;
     }
 }

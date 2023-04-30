@@ -3,191 +3,104 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Shops\Products;
 
+use Eightfold\Printify\Contracts\Collection;
+
 use StdClass;
-use Traversable;
-use Iterator;
 
 use Psr\Http\Message\ResponseInterface;
 
-use Eightfold\Printify\Printify;
+use Eightfold\Printify\Client;
 
-use Eightfold\Printify\Shops\Shop;
+use Eightfold\Printify\Implementations\Collection as CollectionImp;
 
-use Eightfold\Printify\Shops\Products\Product;
-
-class Products implements Traversable, Iterator
+class Products implements Collection
 {
-    private static Shop $shop;
+    use CollectionImp;
 
-    private static int $shopId;
+    /**
+     * @var array<StdClass|Product>
+     */
+    private array $collection;
 
-    private static ResponseInterface $printifyResponse;
-
-    private static StdClass $printifyObject;
-
-    private array $products;
-
-    private $position = 0;
-
-    public static function init(Shop $shop): self
-    {
-        self::$shop   = $shop;
-        self::$shopId = $shop->id();
-
-        return self::get(self::$shopId);
+    public static function fromResponse(
+        Client $client,
+        ResponseInterface $response
+    ): self {
+        $json = $response->getBody()->getContents();
+        return self::fromJson($client, $json);
     }
 
-    public static function get(int $shopId): self
+    public static function fromJson(Client $client, string $json): self
     {
-        self::$shopId = $shopId;
-
-        self::$printifyResponse = Printify::get(self::endpoint());
-
-        $json = self::$printifyResponse->getBody()->getContents();
-
-        $decodedJson = json_decode($json);
-
-        if ($decodedJson === false) {
-            self::$printifyObject = new StdClass();
-
-        } else {
-            self::$printifyObject = $decodedJson;
-
-        }
-        return new self();
-    }
-
-    public static function endpoint(): string
-    {
-        return '/shops/' . self::$shopId . '/products.json';
-    }
-
-    final private function __construct()
-    {
-    }
-
-    private function printifyObject(): StdClass
-    {
-        return self::$printifyObject;
-    }
-
-    private function products(): array
-    {
-        if (isset($this->products) === false or
-            count($this->products) === 0
+        $object = json_decode($json);
+        if (
+            is_object($object) === false or
+            is_a($object, StdClass::class) === false
         ) {
-            if (property_exists($this->printifyObject(), 'data') === false) {
-                return [];
-            }
-
-            $array = $this->printifyObject()->data;
-
-            $this->products = $array;
+            $object = new StdClass();
         }
-        return $this->products;
+        return self::fromObject($client, $object);
     }
 
-    /** Printify object members **/
+    public static function fromObject(Client $client, StdClass $object): self
+    {
+        return new self($client, $object);
+    }
+
+    final private function __construct(
+        private Client $client,
+        private StdClass $object
+    ) {
+        $this->collection = $object->data;
+    }
+
+    /** Printify properties **/
     public function currentPage(): int
     {
-        return $this->propertyNamed('current_page');
+        return intval($this->objectValueOrDefault('current_page', 1));
     }
 
-    public function data(): array
+    public function perPage(): int
     {
-        return $this->propertyNamed('data');
+        return intval($this->objectValueOrDefault('per_page', 10));
     }
+    /** End Printify properties **/
 
-    public function firstPageUrl(): string
+    public function atIndex(int $index): Product
     {
-        return $this->propertyNamed('first_page_url');
-    }
-
-    public function from(): int
-    {
-        return $this->propertyNamed('from');
-    }
-
-    public function lastPage(): int
-    {
-        return $this->propertyNamed('last_page');
-    }
-
-    public function lastPageUrl(): int
-    {
-        return $this->propertyNamed('last_page_url');
-    }
-
-    public function nextPageUrl(): int
-    {
-        return $this->propertyNamed('next_page_url');
-    }
-
-    public function path(): string
-    {
-        return $this->propertyNamed('path');
-    }
-
-    public function perPage(): string
-    {
-        return $this->propertyNamed('per_page');
-    }
-
-    public function previousPageUrl(): string
-    {
-        return $this->propertyNamed('prev_page_url');
-    }
-
-    public function to(): int
-    {
-        return $this->propertyNamed('to');
-    }
-
-    public function total(): int
-    {
-        return $this->propertyNamed('total');
-    }
-
-    private function propertyNamed(string $propertyName): int|string
-    {
-        return $this->printifyObject()->$propertyName;
-    }
-
-    /*********** Iterator ***********/
-    public function current(): Product
-    {
-        $a = $this->products();
-
-        $article = $a[$this->position];
-
-        if (is_a($a[$this->position], Product::class) === false) {
-            $a[$this->position] = Product::init(
-                $a[$this->position],
-                self::$shopId
+        if (is_a($this->collection[$index], StdClass::class)) {
+            $this->collection[$index] = Product::fromObject(
+                $this->client(),
+                $this->collection[$index]
             );
         }
-        return $a[$this->position];
+        return $this->collection[$index];
     }
 
-    public function rewind(): void
-    {
-        $this->position = 0;
+    private function objectValueOrDefault(
+        string $property,
+        string|int|null $default
+    ): string|int|null {
+        $obj = $this->object();
+        if (property_exists($obj, $property)) {
+            return $obj->{$property};
+        }
+        return $default;
     }
 
-    public function key(): int
+    private function client(): Client
     {
-        return $this->position;
+        return $this->client;
     }
 
-    public function next(): void
+    private function object(): StdClass
     {
-        ++$this->position;
+        return $this->object;
     }
 
-    public function valid(): bool
+    /** Iterator **/
+    public function current(): Product
     {
-        $a = $this->products();
-
-        return isset($a[$this->position]);
+        return $this->atIndex($this->position);
     }
 }
