@@ -30,21 +30,30 @@ class Shops implements Collection
         string $json
     ): self {
         $array = json_decode($json);
+        if (is_array($array) === false) {
+            $array = [];
+        }
         return self::fromArray($client, $array);
     }
 
+    /**
+     * @param array<StdClass|Shop> $collection
+     */
     public static function fromArray(Client $client, array $collection): self
     {
         return new self($client, $collection);
     }
 
+    /**
+     * @param array<StdClass|Shop> $collection
+     */
     final private function __construct(
-        private Client $client,
+        private readonly Client $client,
         private array $collection
     ) {
     }
 
-    public function atIndex(int $index): Shop
+    public function atIndex(int $index): Shop|StdClass
     {
         if (is_a($this->collection[$index], StdClass::class)) {
             $this->collection[$index] = Shop::fromObject(
@@ -55,10 +64,13 @@ class Shops implements Collection
         return $this->collection[$index];
     }
 
-    public function shop(int $withId): Shop
+    public function shop(int $withId): Shop|StdClass
     {
         foreach ($this as $shop) {
-            if ($shop->id() === $withId) {
+            if (
+                is_a($shop, Shop::class) and
+                $shop->id() === $withId
+            ) {
                 return $shop;
             }
         }
@@ -71,7 +83,7 @@ class Shops implements Collection
     }
 
     /** Iterator **/
-    public function current(): Shop
+    public function current(): Shop|StdClass
     {
         return $this->atIndex($this->position);
     }

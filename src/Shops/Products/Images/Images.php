@@ -19,41 +19,36 @@ class Images implements Collection
 {
     use CollectionImp;
 
-    public static function fromArray(Client $client, array $collection): self
+    /**
+     * @param array<StdClass|Image> $collection
+     */
+    public static function fromArray(array $collection): self
     {
-        return new self($client, $collection);
+        return new self($collection);
     }
 
-    final private function __construct(
-        private Client $client,
-        private array $collection
-    ) {
+    /**
+     * @param array<StdClass|Image> $collection
+     */
+    final private function __construct(private array $collection)
+    {
     }
 
     public function atIndex(int $index): Image
     {
         if (is_a($this->collection[$index], StdClass::class)) {
             $this->collection[$index] = Image::fromObject(
-                $this->client(),
                 $this->collection[$index]
             );
         }
         return $this->collection[$index];
     }
 
-    public function defaultForVariant(Variant|int $variant): Image|ImageError
+    /**
+     * @return Image[]
+     */
+    public function imagesForVariant(Variant|int $variant): array
     {
-        $image = $this->imagesForVariant($variant, true);
-        if (is_a($image, Image::class)) {
-            return $image;
-        }
-        return ImageError::NoDefaultForVariant;
-    }
-
-    public function imagesForVariant(
-        Variant|int $variant,
-        bool $defaultOnly = false
-    ): array|Image {
         $variantId = $variant;
         if (is_int($variant) === false) {
             $variantId = $variant->id();
@@ -62,18 +57,29 @@ class Images implements Collection
         $images = [];
         foreach ($this as $image) {
             if (in_array($variantId, $image->variantIds())) {
-                if ($defaultOnly and $image->isDefault()) {
-                    return $image;
-                }
                 $images[] = $image;
             }
         }
         return $images;
     }
 
-    private function client(): Client
+    public function defaultForVariant(Variant|int $variant): Image|false
     {
-        return $this->client;
+        $variantId = $variant;
+        if (is_int($variant) === false) {
+            $variantId = $variant->id();
+        }
+
+        $images = [];
+        foreach ($this as $image) {
+            if (
+                in_array($variantId, $image->variantIds()) and
+                $image->isDefault()
+            ) {
+                return $image;
+            }
+        }
+        return false;
     }
 
     /** Iterator **/

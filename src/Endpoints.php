@@ -5,6 +5,8 @@ namespace Eightfold\Printify;
 
 use Eightfold\Printify\Shops\Shop;
 
+use Eightfold\Printify\Shops\Products\Product;
+
 /**
  * Supported endpoints.
  */
@@ -15,17 +17,25 @@ class Endpoints
         return '/shops.json';
     }
 
-    public static function getProducts(int|Shop $shop): string
-    {
-        if (is_a($shop, Shop::class)) {
+    public static function getProducts(
+        int|Shop $shop,
+        int $page = 1,
+        int $limit = 10
+    ): string {
+        if (is_int($shop) === false) {
             $shop = $shop->id();
         }
-        return '/shops/' . $shop . '/products.json';
+
+        if ($page === 1 and $limit === 10) {
+            return '/shops/' . $shop . '/products.json';
+        }
+        return '/shops/' . $shop . '/products.json?page=' . $page .
+            '&limit=' . $limit;
     }
 
     public static function getProduct(int|Shop $shop, string $productId): string
     {
-        if (is_a($shop, Shop::class)) {
+        if (is_int($shop) === false) {
             $shop = $shop->id();
         }
         return '/shops/' . $shop . '/products/' . $productId . '.json';

@@ -7,6 +7,9 @@ class Printify
 {
     private const API_VERSION = 'https://api.printify.com/v1';
 
+    /**
+     * @var array<string, string>
+     */
     private array $mergedConfig;
 
     public static function account(string $accessToken): self
@@ -30,6 +33,9 @@ class Printify
         return $config['access_token'];
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function config(): array
     {
         if (isset($this->mergedConfig) === false) {
@@ -41,6 +47,9 @@ class Printify
         return $this->mergedConfig;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function defaultConfig(): array
     {
         return [

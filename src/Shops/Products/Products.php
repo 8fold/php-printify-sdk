@@ -17,6 +17,9 @@ class Products implements Collection
 {
     use CollectionImp;
 
+    /**
+     * @var array<StdClass|Product>
+     */
     private array $collection;
 
     public static function fromResponse(
@@ -30,6 +33,12 @@ class Products implements Collection
     public static function fromJson(Client $client, string $json): self
     {
         $object = json_decode($json);
+        if (
+            is_object($object) === false or
+            is_a($object, StdClass::class) === false
+        ) {
+            $object = new StdClass();
+        }
         return self::fromObject($client, $object);
     }
 

@@ -13,15 +13,13 @@ use Eightfold\Printify\Shops\Products\Images\ImageError;
 
 class Variant
 {
-    public static function fromObject(Client $client, StdClass $object): self
+    public static function fromObject(StdClass $object): self
     {
-        return new self($client, $object);
+        return new self($object);
     }
 
-    final private function __construct(
-        private Client $client,
-        private StdClass $object
-    ) {
+    final private function __construct(private StdClass $object)
+    {
     }
 
     /** Printify properties **/
@@ -70,6 +68,9 @@ class Variant
         return $this->object()->is_available;
     }
 
+    /**
+     * @return StdClass[]
+     */
     public function options(): array
     {
         return $this->object()->options;
@@ -91,19 +92,17 @@ class Variant
         return ! $this->isAvailable();
     }
 
-    public function defaultImage(Product $product): Image|ImageError
+    public function defaultImage(Product $product): Image|false
     {
         return $product->images()->defaultForVariant($this->id());
     }
 
+    /**
+     * @return Image[]
+     */
     public function images(Product $product): array
     {
         return $product->images()->imagesForVariant($this->id());
-    }
-
-    private function client(): Client
-    {
-        return $this->client;
     }
 
     private function object(): StdClass

@@ -42,12 +42,20 @@ class Shop implements SupportsLazyLoading
 
     public function title(): string
     {
-        return $this->valueForProperty('title');
+        $value = $this->valueForProperty('title');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
     public function salesChannel(): string
     {
-        return $this->valueForProperty('sales_channel');
+        $value = $this->valueForProperty('sales_channel');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
     public function valueForProperty(string $named): mixed
@@ -55,7 +63,10 @@ class Shop implements SupportsLazyLoading
         $obj = $this->object();
         if (property_exists($obj, $named) === false) {
             $shop = $this->client()->getShop($this->id());
-            $this->object = $shop->object();
+            if (is_bool($shop) === false and is_a($shop, Shop::class)) {
+                $this->object = $shop->object();
+
+            }
         }
         return $this->object->{$named};
     }

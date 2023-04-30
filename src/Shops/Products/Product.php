@@ -42,6 +42,12 @@ class Product implements SupportsLazyLoading
     public static function fromJson(Client $client, string $json): self
     {
         $object = json_decode($json);
+        if (
+            is_object($object) === false or
+            is_a($object, StdClass::class) === false
+        ) {
+            $object = new StdClass();
+        }
         return self::fromObject($client, $object);
     }
 
@@ -69,66 +75,96 @@ class Product implements SupportsLazyLoading
 
     public function title(): string
     {
-        return $this->valueForProperty('title');
+        $value = $this->valueForProperty('title');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
     public function description(): string
     {
-        return $this->valueForProperty('description');
+        $value = $this->valueForProperty('description');
+        if (is_string($value)) {
+            return $value;
+        }
+        return '';
     }
 
+    /**
+     * @return string[]
+     */
     public function tags(): array
     {
-        return $this->valueForProperty('tags');
+        $value = $this->valueForProperty('tags');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
     }
 
+    /**
+     * @return StdClass[]
+     */
     public function options(): array
     {
-        return $this->object()->options;
+        $value = $this->object()->options;
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
     }
 
     public function variants(): Variants
     {
-        return Variants::fromArray(
-            $this->client(),
-            $this->valueForProperty('variants')
-        );
+        $value = $this->valueForProperty('variants');
+        if (is_array($value)) {
+            return Variants::fromArray($value);
+        }
+        return Variants::fromArray([]);
     }
 
     public function images(): Images
     {
-        return Images::fromArray(
-            $this->client(),
-            $this->valueForProperty('images')
+        $value = $this->valueForProperty('images');
+        if (is_array($value)) {
+            return Images::fromArray($value);
+        }
+        return Images::fromArray([]);
+    }
+
+    public function createdAt(): DateTime|false
+    {
+        return DateTime::createFromFormat(
+            self::TIMESTAMP_FORMAT,
+            $this->createdAtString()
         );
     }
 
-    public function createdAt(bool $returnDate = false): string|DateTime
+    public function updatedAt(bool $returnDate = false): DateTime|false
     {
-        $date = $this->valueForProperty('created_at');
-        if ($returnDate === false) {
-            return $date;
-        }
-        return DateTime::createFromFormat(self::TIMESTAMP_FORMAT, $date);
-    }
-
-    public function updatedAt(bool $returnDate = false): string|DateTime
-    {
-        $date = $this->valueForProperty('updated_at');
-        if ($returnDate === false) {
-            return $date;
-        }
-        return DateTime::createFromFormat(self::TIMESTAMP_FORMAT, $date);
+        return DateTime::createFromFormat(
+            self::TIMESTAMP_FORMAT,
+            $this->updatedAtString()
+        );
     }
 
     public function visible(): bool
     {
-        return $this->valueForProperty('visible');
+        $value = $this->valueForProperty('visible');
+        if (is_bool($value)) {
+            return $value;
+        }
+        return false;
     }
 
     public function isLocked(): bool
     {
-        return $this->valueForProperty('is_locked');
+        $value = $this->valueForProperty('is_locked');
+        if (is_bool($value)) {
+            return $value;
+        }
+        return false;
     }
 
     public function blueprintId(): int
@@ -146,14 +182,31 @@ class Product implements SupportsLazyLoading
         return intval($this->valueForProperty('print_provider_id'));
     }
 
+    /**
+     * @return StdClass[]
+     */
     public function printAreas(): array
     {
-        return $this->valueForProperty('print_areas');
+        $value = $this->valueForProperty('print_areas');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
     }
 
+    /**
+     * According to the documentation, custom integrations will always be
+     * null or an empty array.
+     *
+     * @return mixed[]
+     */
     public function salesChannelProperties(): array
     {
-        return $this->valueForProperty('sales_channel_properties');
+        $value = $this->valueForProperty('sales_channel_properties');
+        if (is_array($value)) {
+            return $value;
+        }
+        return [];
     }
     /** End Printify properties **/
 
@@ -172,12 +225,33 @@ class Product implements SupportsLazyLoading
         return ! $this->isLocked();
     }
 
+    public function createdAtString(): string
+    {
+        $date = $this->valueForProperty('created_at');
+        if (is_string($date)) {
+            return $date;
+        }
+        return date(self::TIMESTAMP_FORMAT);
+    }
+
+    public function updatedAtString(): string
+    {
+        $date = $this->valueForProperty('updated_at');
+        if (is_string($date)) {
+            return $date;
+        }
+        return date(self::TIMESTAMP_FORMAT);
+    }
+
     public function valueForProperty(string $named): mixed
     {
         $obj = $this->object();
         if (property_exists($obj, $named) === false) {
             $product = $this->client()->getProduct($this->shopId(), $this->id());
-            $this->object = $product->object();
+            if (is_a($product, Product::class)) {
+                $this->object = $product->object();
+
+            }
         }
         return $this->object()->{$named};
     }

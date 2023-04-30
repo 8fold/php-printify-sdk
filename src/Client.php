@@ -53,13 +53,22 @@ class Client
      *
      * @return Shop|ResponseInterface If fails to get Shops, returns response.
      */
-    public function getShop(int $withId): Shop|ResponseInterface
+    public function getShop(int $withId): Shop|ResponseInterface|false
     {
         $shops = $this->getShops();
         if (is_a($shops, ResponseInterface::class)) {
-            return $shop;
+            return $shops;
         }
-        return $shops->shop(withId: $withId);
+
+        if (is_a($shops, Shops::class) === false) {
+            return false;
+        }
+
+        $shop = $shops->shop(withId: $withId);
+        if (is_a($shop, Shop::class) === false) {
+            return false;
+        }
+        return $shop;
     }
 
     public function getShops(): Shops|ResponseInterface
@@ -77,10 +86,14 @@ class Client
         return Shops::fromResponse($this, $response);
     }
 
-    public function getProducts(int|Shop $shop): Products|ResponseInterface
-    {
+    public function getProducts(
+        int|Shop $shop,
+        int $page = 1,
+        int $limit = 10
+    ): Products|ResponseInterface {
         $method   = 'GET';
-        $endpoint = $this->account()->apiVersion() . Endpoints::getProducts($shop);
+        $endpoint = $this->account()->apiVersion() .
+            Endpoints::getProducts($shop, $page, $limit);
 
         $response = $this->httpClient()->sendRequest(
             new Request($method, $endpoint, $this->standardHeaders())
@@ -123,7 +136,7 @@ class Client
 
     public function postPublishingSucceededForProduct(
         Product $product,
-        External|null $external = null,
+        StdClass|null $external = null,
         bool $returnBool = false
     ): ResponseInterface|bool {
         $method   = 'POST';
@@ -133,8 +146,10 @@ class Client
 
         $body = false;
         if ($external !== null) {
-            $body = new StdClass();
-            $body->external = json_encode($extenal);
+            $b = new StdClass();
+            $b->external = json_encode($external);
+
+            $body = json_encode($body);
         }
 
         $response = '';
@@ -167,6 +182,9 @@ class Client
         return $statusCode > 199 and $statusCode < 300;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function standardHeaders(): array
     {
         return [

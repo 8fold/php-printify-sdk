@@ -17,45 +17,46 @@ class Variants implements Collection
 {
     use CollectionImp;
 
-    public static function fromArray(Client $client, array $collection): self
+    /**
+     * @param array<StdClass|Variant> $collection
+     */
+    public static function fromArray(array $collection): self
     {
-        return new self($client, $collection);
+        return new self($collection);
     }
 
-    final private function __construct(
-        private Client $client,
-        private array $collection
-    ) {
+    /**
+     * @param array<StdClass|Variant> $collection
+     */
+    final private function __construct(private array $collection)
+    {
     }
 
-    public function atIndex(int $index): Variant
+    public function atIndex(int $index): Variant|StdClass
     {
         if (is_a($this->collection[$index], StdClass::class)) {
             $this->collection[$index] = Variant::fromObject(
-                $this->client(),
                 $this->collection[$index]
             );
         }
         return $this->collection[$index];
     }
 
-    public function variantWithId(int $variantId): Variant
+    public function variantWithId(int $variantId): Variant|false
     {
         foreach ($this as $v) {
-            if ($v->id() === $variantId) {
+            if (
+                is_a($v, Variant::class) and
+                $v->id() === $variantId
+            ) {
                 return $v;
             }
         }
-        return $this->atIndex(0);
-    }
-
-    private function client(): Client
-    {
-        return $this->client;
+        return false;
     }
 
     /** Iterator **/
-    public function current(): Variant
+    public function current(): Variant|StdClass
     {
         return $this->atIndex($this->position);
     }

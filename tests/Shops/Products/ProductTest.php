@@ -17,14 +17,14 @@ use DateTime;
 
 class ProductTest extends TestCase
 {
-    private function nonApiClient(): Client
+    protected function nonApiClient(): Client
     {
         return Client::connect(
             Printify::account('token')
         );
     }
 
-    private function fullProduct(): Product
+    protected function fullProduct(): Product
     {
         $json = file_get_contents(__DIR__ . '/../../api-responses/get-product.json');
 
@@ -66,14 +66,14 @@ class ProductTest extends TestCase
 
         $expected = '2019-07-25 13:40:41+00:00';
 
-        $result = $product->createdAt();
+        $result = $product->createdAtString();
 
         $this->assertSame(
             $expected,
             $result
         );
 
-        $result = $product->createdAt(returnDate: true)
+        $result = $product->createdAt()
             ->format($product::TIMESTAMP_FORMAT);
 
         $this->assertSame(
@@ -83,14 +83,14 @@ class ProductTest extends TestCase
 
         $expected = '2019-07-25 13:40:59+00:00';
 
-        $result = $product->updatedAt();
+        $result = $product->updatedAtString();
 
         $this->assertSame(
             $expected,
             $result
         );
 
-        $result = $product->updatedAt(returnDate: true)
+        $result = $product->updatedAt()
             ->format($product::TIMESTAMP_FORMAT);
 
         $this->assertSame(
