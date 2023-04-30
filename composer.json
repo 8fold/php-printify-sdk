@@ -45,7 +45,7 @@
   "scripts": {
     "prod": "@production",
     "production": [
-      "composer dumuutoload -o",
+      "composer dumpautoload -o",
       "@style",
       "@stan",
       "@test"
