@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Tests\Shops\Products\Images;
 
-use Eightfold\Printify\Tests\Shops\Products\ProductTest;
+use Eightfold\Printify\Tests\TestCase;
 
-class ImageTest extends ProductTest
+class ImageTest extends TestCase
 {
     /**
      * @test
@@ -14,7 +14,7 @@ class ImageTest extends ProductTest
     {
         $expected = 'mug-11oz.jpg';
 
-        $product = $this->fullProduct();
+        $product = parent::fullProduct();
 
         $variants = $product->variants();
 

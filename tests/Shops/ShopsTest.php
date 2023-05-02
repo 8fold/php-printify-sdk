@@ -1,15 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Eigthfold\Printify\Tests\Shops;
+namespace Eightfold\Printify\Tests\Shops;
 
-use PHPUnit\Framework\TestCase;
+use Eightfold\Printify\Tests\TestCase;
 
 use Eightfold\Printify\Shops\Shops;
-
-use Eightfold\Printify\Client;
-
-use Eightfold\Printify\Printify;
 
 class ShopsTest extends TestCase
 {
@@ -17,11 +13,7 @@ class ShopsTest extends TestCase
     {
         $json = file_get_contents(__DIR__ . '/../api-responses/get-shops.json');
 
-        $client = Client::connect(
-            Printify::account('token')
-        );
-
-        return Shops::fromJson($client, $json);
+        return Shops::fromJson(parent::nonApiClient(), $json);
     }
 
     /**

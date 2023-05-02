@@ -3,25 +3,14 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Tests\Shops\Products;
 
-use PHPUnit\Framework\TestCase;
+use Eightfold\Printify\Tests\TestCase;
 
 use Eightfold\Printify\Shops\Products\Products;
 
 use Eightfold\Printify\Shops\Products\Product;
 
-use Eightfold\Printify\Client;
-
-use Eightfold\Printify\Printify;
-
 class ProductsTest extends TestCase
 {
-    private function nonApiClient(): Client
-    {
-        return Client::connect(
-            Printify::account('token')
-        );
-    }
-
     /**
      * @test
      */
@@ -31,7 +20,7 @@ class ProductsTest extends TestCase
             __DIR__ . '/../../api-responses/get-products-lite-required.json'
         );
 
-        $sut = Products::fromJson($this->nonApiClient(), $json);
+        $sut = Products::fromJson(parent::nonApiClient(), $json);
 
         $expected = 1;
 
@@ -76,7 +65,7 @@ class ProductsTest extends TestCase
             __DIR__ . '/../../api-responses/get-products-lite-all.json'
         );
 
-        $sut = Products::fromJson($this->nonApiClient(), $json);
+        $sut = Products::fromJson(parent::nonApiClient(), $json);
 
         $expected = 1;
 
