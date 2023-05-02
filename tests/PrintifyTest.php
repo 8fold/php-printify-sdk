@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Eightfold\Printify\Tests\TestCase;
 
 use Eightfold\Printify\Printify;
 
@@ -14,7 +14,7 @@ class PrintifyTest extends TestCase
      */
     public function can_get_configuration_values(): void
     {
-        $account = Printify::account(accessToken: 'token');
+        $account = parent::printifyAccount();
 
         $expected = 'https://api.printify.com/v1';
 

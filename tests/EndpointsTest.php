@@ -3,12 +3,9 @@ declare(strict_types=1);
 
 namespace Eightfold\Printify\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Eightfold\Printify\Tests\TestCase;
 
 use Eightfold\Printify\Endpoints;
-
-use Eightfold\Printify\Client;
-use Eightfold\Printify\Printify;
 
 use Eightfold\Printify\Shops\Shop;
 
@@ -46,9 +43,7 @@ class EndpointsTest extends TestCase
             $result
         );
 
-        $client = Client::connect(
-            Printify::account('token')
-        );
+        $client = parent::nonApiClient();
 
         $shop = Shop::withId($client, 12345);
 
